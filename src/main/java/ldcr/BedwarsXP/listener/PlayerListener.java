@@ -2,7 +2,6 @@ package ldcr.BedwarsXP.listener;
 
 import io.github.bedwarsrel.BedwarsRel;
 import io.github.bedwarsrel.events.BedwarsGameEndEvent;
-import io.github.bedwarsrel.events.BedwarsGameStartEvent;
 import io.github.bedwarsrel.game.Game;
 import ldcr.BedwarsXP.BedwarsXP;
 import ldcr.BedwarsXP.Config;
@@ -21,11 +20,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -33,10 +32,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.Collections;
 
 public class PlayerListener implements Listener {
-    @SuppressWarnings("deprecation")
-    @EventHandler
-    public void onItemPickup(PlayerPickupItemEvent e) {
-        Player p = e.getPlayer();
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onItemPickup(EntityPickupItemEvent e) {
+        if (!(e.getEntity() instanceof Player)) return;
+        Player p = (Player) e.getEntity();
         Game bw = checkGame(p);
         if (bw == null) return;
         Item entity = e.getItem();
@@ -186,4 +186,5 @@ public class PlayerListener implements Listener {
             return null;
         return bw;
     }
+
 }

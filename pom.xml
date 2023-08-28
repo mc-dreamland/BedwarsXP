@@ -23,6 +23,19 @@
         </repository>
 </repositories>
 
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <name>releases</name>
+            <url>https://nexus.bjd-mc.com:8443/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <name>snapshots</name>
+            <url>https://nexus.bjd-mc.com:8443/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 
     <dependencies>
         <dependency>
