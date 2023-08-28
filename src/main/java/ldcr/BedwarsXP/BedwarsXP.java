@@ -2,16 +2,14 @@ package ldcr.BedwarsXP;
 
 import ldcr.BedwarsXP.command.BedwarsXPCommandListener;
 import ldcr.BedwarsXP.command.EditXPCommandListener;
+import ldcr.BedwarsXP.listener.PlayerListener;
 import ldcr.BedwarsXP.utils.ActionBarUtils;
 import ldcr.BedwarsXP.utils.ReflectionUtils;
 import lombok.Getter;
-import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import sakura.kooi.utils.GithubUpdateChecker.UpdateChecker;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +38,7 @@ public class BedwarsXP extends JavaPlugin {
     }
 
     public static void sendConsoleMessage(String str) {
-        consoleSender.sendMessage("§6§lBedwarsXP §7>> " + str);
+        getInstance().getLogger().info(str);
     }
 
     @Override
@@ -56,7 +54,7 @@ public class BedwarsXP extends JavaPlugin {
                 return;
             }
             ActionBarUtils.load();
-            Bukkit.getPluginManager().registerEvents(new EventListeners(), this);
+            Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
             getCommand("bedwarsxp").setExecutor(new BedwarsXPCommandListener());
             getCommand("bedwarsxpedit").setExecutor(new EditXPCommandListener());
         } catch (Exception e) {
@@ -72,20 +70,6 @@ public class BedwarsXP extends JavaPlugin {
         sendConsoleMessage("§b" + l18n("SUCCESSFULLY_LOADED") + " By.SakuraKooi");
         sendConsoleMessage("§e   ↓↓ << " + l18n("REPORT_ISSUE_AND_SUGGESTION_HERE") + " >> ↓↓  ");
         sendConsoleMessage("§c https://github.com/SakuraKoi/BedwarsXP/issues/1");
-        // Update checker and metrics
-        if (!Config.disableUpdateChecker) {
-            Bukkit.getScheduler().runTaskLater(this, () -> {
-                try {
-                    new UpdateChecker("SakuraKoi", "BedwarsXP", "v" + getDescription().getVersion(), link -> {
-                        updateUrl = link;
-                        sendConsoleMessage("§b" + l18n("HAS_UPDATE", "%link%", link));
-                    }).check();
-                } catch (IOException ignored) {}
-            }, 100);
-        }
-        try {
-            new Metrics(this, 3999);
-        } catch (Exception ignored) {}
     }
 
     private boolean detectBedwarsRelVersion() {

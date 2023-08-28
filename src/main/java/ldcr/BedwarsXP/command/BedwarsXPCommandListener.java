@@ -33,10 +33,10 @@ public class BedwarsXPCommandListener implements CommandExecutor {
                     SendMessageUtils.sendMessage(sender,
                             "§6§lBedwarsXP §7>> §b" + BedwarsXP.l18n("RELOAD_GAME_RUNNING"),
                             "§6§lBedwarsXP §7>> §b" + BedwarsXP.l18n("UPDATE_RUNNING_GAME"));
-                    BedwarsGameUtils.replaceAllShop(sender);
                 }
                 return true;
             }
+            
             case "enable": {
                 if (args.length != 2) {
                     sender.sendMessage("§6§lBedwarsXP §7>> §a" + BedwarsXP.l18n("HELP_MAIN_ENABLE"));

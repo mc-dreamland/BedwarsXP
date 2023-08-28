@@ -1,10 +1,11 @@
-package ldcr.BedwarsXP;
+package ldcr.BedwarsXP.listener;
 
 import io.github.bedwarsrel.BedwarsRel;
 import io.github.bedwarsrel.events.BedwarsGameEndEvent;
 import io.github.bedwarsrel.events.BedwarsGameStartEvent;
 import io.github.bedwarsrel.game.Game;
-import ldcr.BedwarsXP.XPShop.ShopReplacer;
+import ldcr.BedwarsXP.BedwarsXP;
+import ldcr.BedwarsXP.Config;
 import ldcr.BedwarsXP.api.XPManager;
 import ldcr.BedwarsXP.api.events.BedwarsXPDeathDropXPEvent;
 import ldcr.BedwarsXP.utils.ResourceUtils;
@@ -16,6 +17,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -23,7 +25,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
@@ -31,14 +32,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Collections;
 
-public class EventListeners implements Listener {
+public class PlayerListener implements Listener {
     @SuppressWarnings("deprecation")
     @EventHandler
     public void onItemPickup(PlayerPickupItemEvent e) {
         Player p = e.getPlayer();
         Game bw = checkGame(p);
         if (bw == null) return;
-
         Item entity = e.getItem();
         ItemStack stack = entity.getItemStack();
         if (stack == null) return;
@@ -49,8 +49,8 @@ public class EventListeners implements Listener {
             count = ResourceUtils.convertResToXP(stack);
         }
 
-        if (count == null)
-            return;
+        if (count == null) return;
+        if (count == 0) return;
 
         if (pickupXP(bw, p, count)) {
             e.setCancelled(true);
@@ -97,7 +97,7 @@ public class EventListeners implements Listener {
         droppedItem.setPickupDelay(40);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onAnvilOpen(InventoryOpenEvent e) {
         if (e.getPlayer() == null)
             return;
@@ -155,22 +155,13 @@ public class EventListeners implements Listener {
     }
 
     @EventHandler
-    public void onBedWarsStart(BedwarsGameStartEvent e) {
-        if (e.isCancelled())
-            return;
-        if (!Config.isGameEnabledXP(e.getGame().getName()))
-            return;
-        ShopReplacer.replaceShop(e.getGame().getName(), BedwarsXP.getConsoleSender());
-    }
-
-    @EventHandler
     public void onBedWarsEnd(BedwarsGameEndEvent e) {
         if (!Config.isGameEnabledXP(e.getGame().getName()))
             return;
         XPManager.reset(e.getGame().getName());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent e) { // 在玩家传送后更新经验条
         Player p = e.getPlayer();
         Game bw = checkGame(p);
@@ -180,21 +171,11 @@ public class EventListeners implements Listener {
 
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent e) {
         Game bw = checkGame(e.getPlayer());
         if (bw == null) return;
         XPManager.getXPManager(bw.getName()).updateXPBar(e.getPlayer());
-    }
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent e) {
-        if (BedwarsXP.getUpdateUrl() != null && e.getPlayer().hasPermission("bedwarsxp.admin")) {
-            Bukkit.getScheduler().runTaskLater(BedwarsXP.getInstance(), () -> {
-                if (e.getPlayer().isOnline())
-                    e.getPlayer().sendMessage("§6§lBedwarsXP §7>> §b" + BedwarsXP.l18n("HAS_UPDATE", "%link%", BedwarsXP.getUpdateUrl()));
-            }, 30);
-        }
     }
 
     private Game checkGame(Player player) {

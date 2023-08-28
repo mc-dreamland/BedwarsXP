@@ -140,6 +140,6 @@ public class Config {
     }
 
     public static boolean isGameEnabledXP(String bw) {
-        return enabledGameList.contains(bw);
+        return true;
     }
 }
