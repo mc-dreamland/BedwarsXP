@@ -2,6 +2,7 @@ package ldcr.BedwarsXP.api;
 
 import ldcr.BedwarsXP.Config;
 import ldcr.BedwarsXP.utils.ActionBarUtils;
+import ldcr.BedwarsXP.utils.SoundMachine;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -73,15 +74,16 @@ public class XPManager {
         if (!messageCountMap.containsKey(player.getUniqueId())) {
             messageCountMap.put(player.getUniqueId(), 0);
         }
-        if (System.currentTimeMillis() - messageTimeMap.get(player.getUniqueId()) > 500) {
-            messageCountMap.put(player.getUniqueId(), 0);
-        }
-        messageTimeMap.put(player.getUniqueId(), System.currentTimeMillis());
         int c = messageCountMap.get(player.getUniqueId()) + count;
         messageCountMap.put(player.getUniqueId(), c);
-        if (!Config.xpMessage.isEmpty()) {
-            ActionBarUtils.sendActionBar(player, Config.xpMessage.replaceAll("%xp%", Integer.toString(c)));
+        if (System.currentTimeMillis() - messageTimeMap.get(player.getUniqueId()) > 500) {
+            if (!Config.xpMessage.isEmpty()) {
+                ActionBarUtils.sendActionBar(player, Config.xpMessage.replaceAll("%xp%", Integer.toString(c)));
+            }
+            messageCountMap.put(player.getUniqueId(), 0);
+            messageTimeMap.put(player.getUniqueId(), System.currentTimeMillis());
         }
+        player.playSound(player.getLocation(), SoundMachine.get("ORB_PICKUP", "ENTITY_EXPERIENCE_ORB_PICKUP"), 0.2F, 1.5F);
     }
 
     public void sendMaxXPMessage(Player player) {

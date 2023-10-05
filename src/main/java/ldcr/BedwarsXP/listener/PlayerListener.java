@@ -8,10 +8,9 @@ import ldcr.BedwarsXP.Config;
 import ldcr.BedwarsXP.api.XPManager;
 import ldcr.BedwarsXP.api.events.BedwarsXPDeathDropXPEvent;
 import ldcr.BedwarsXP.utils.ResourceUtils;
-import ldcr.BedwarsXP.utils.SoundMachine;
+import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -43,14 +42,13 @@ public class PlayerListener implements Listener {
         ItemStack stack = entity.getItemStack();
         if (stack == null) return;
         Integer count;
-        if (stack.hasItemMeta() && stack.getItemMeta().getDisplayName() != null && stack.getItemMeta().getDisplayName().equals("§b§l&BedwarsXP_DroppedXP")) {
-            count = Integer.parseInt(stack.getItemMeta().getLore().get(0));
+        if (stack.getType().name().contains("BOTTLE") && stack.hasItemMeta() && stack.getItemMeta().hasDisplayName() && stack.getItemMeta().getDisplayName().equals("§f经验") && stack.getItemMeta().hasLore()) {
+            count = NumberUtils.toInt(stack.getItemMeta().getLore().get(0));
         } else {
             count = ResourceUtils.convertResToXP(stack);
         }
 
-        if (count == null) return;
-        if (count == 0) return;
+        if (count == null || count == 0) return;
 
         if (pickupXP(bw, p, count)) {
             e.setCancelled(true);
@@ -78,7 +76,6 @@ public class PlayerListener implements Listener {
             added = Config.maxXP;
         }
         xpman.setXP(player, added);
-        player.playSound(player.getLocation(), SoundMachine.get("ORB_PICKUP", "ENTITY_EXPERIENCE_ORB_PICKUP"), 0.2F, 1.5F);
         xpman.sendXPMessage(player, count);
         if (leftXP > 0) {
             dropXPBottle(player, leftXP);
@@ -89,9 +86,8 @@ public class PlayerListener implements Listener {
     private void dropXPBottle(Player player, int xp) {
         ItemStack dropStack = new ItemStack(Material.EXP_BOTTLE, 16);
         ItemMeta meta = dropStack.getItemMeta();
-        meta.setDisplayName("§b§l&BedwarsXP_DroppedXP");
+        meta.setDisplayName("§f经验");
         meta.setLore(Collections.singletonList(String.valueOf(xp)));
-        meta.addEnchant(Enchantment.LOOT_BONUS_MOBS, 1, true);
         dropStack.setItemMeta(meta);
         Item droppedItem = player.getWorld().dropItemNaturally(player.getLocation().add(0, 1, 0), dropStack);
         droppedItem.setPickupDelay(40);
@@ -139,7 +135,12 @@ public class PlayerListener implements Listener {
         if (dropped < 1)
             return;
         if (Config.dontDropExpBottle) {
+            if (p.getKiller() != null){
+                pickupXP(bw, p.getKiller(), dropped);
+                return;
+            }
             EntityDamageEvent ev = p.getLastDamageCause();
+
             if (ev instanceof EntityDamageByEntityEvent) {
                 Object killer = ((EntityDamageByEntityEvent) ev).getDamager();
                 if (killer instanceof Projectile) {
