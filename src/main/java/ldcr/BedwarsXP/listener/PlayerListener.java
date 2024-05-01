@@ -24,11 +24,17 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class PlayerListener implements Listener {
 
@@ -106,6 +112,11 @@ public class PlayerListener implements Listener {
         }
     }
 
+    @EventHandler
+    private void onJoin(PlayerQuitEvent e){
+        PlayerDeathEvent deathEvent = new PlayerDeathEvent(e.getPlayer(), new ArrayList<>(), 0, null);
+        Bukkit.getPluginManager().callEvent(deathEvent);
+    }
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
