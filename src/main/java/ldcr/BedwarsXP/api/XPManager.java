@@ -36,12 +36,9 @@ public class XPManager {
     }
 
     private int get(Player player) {
-        Integer value = xp.get(player.getUniqueId());
-        if (value == null) {
-            value = 0;
-            xp.put(player.getUniqueId(), 0);
-        }
-        return value;
+        UUID uniqueId = player.getUniqueId();
+        xp.putIfAbsent(uniqueId, 0);
+        return xp.get(uniqueId);
     }
 
     public void setXP(Player player, int count) {
@@ -68,20 +65,18 @@ public class XPManager {
     }
 
     public void sendXPMessage(Player player, int count) {
-        if (!messageTimeMap.containsKey(player.getUniqueId())) {
-            messageTimeMap.put(player.getUniqueId(), System.currentTimeMillis());
-        }
-        if (!messageCountMap.containsKey(player.getUniqueId())) {
-            messageCountMap.put(player.getUniqueId(), 0);
-        }
-        int c = messageCountMap.get(player.getUniqueId()) + count;
-        messageCountMap.put(player.getUniqueId(), c);
-        if (System.currentTimeMillis() - messageTimeMap.get(player.getUniqueId()) > 500) {
-            if (!Config.xpMessage.isEmpty()) {
-                ActionBarUtils.sendActionBar(player, Config.xpMessage.replaceAll("%xp%", Integer.toString(c)));
+        UUID uniqueId = player.getUniqueId();
+        if (!Config.xpMessage.isEmpty()) {
+            messageTimeMap.putIfAbsent(uniqueId, System.currentTimeMillis() + 500);
+            messageCountMap.putIfAbsent(uniqueId, 0);
+
+            int addedXp = messageCountMap.get(uniqueId) + count;
+            messageCountMap.put(uniqueId, addedXp);
+            if (System.currentTimeMillis() > messageTimeMap.get(uniqueId)) {
+                ActionBarUtils.sendActionBar(player, Config.xpMessage.replaceAll("%xp%", Integer.toString(addedXp)));
+                messageCountMap.remove(uniqueId);
+                messageTimeMap.remove(uniqueId);
             }
-            messageCountMap.put(player.getUniqueId(), 0);
-            messageTimeMap.put(player.getUniqueId(), System.currentTimeMillis());
         }
         player.playSound(player.getLocation(), SoundMachine.get("ORB_PICKUP", "ENTITY_EXPERIENCE_ORB_PICKUP"), 0.2F, 1.5F);
     }

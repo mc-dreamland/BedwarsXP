@@ -3,6 +3,7 @@ main: ldcr.BedwarsXP.BedwarsXP
 version: 1.0.0
 author: SakuraKooi
 depend: [BedwarsRel]
+api-version: 1.13
 commands:
   bedwarsxp:
     description: 经验起床

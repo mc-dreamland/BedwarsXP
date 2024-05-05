@@ -2,6 +2,7 @@ package ldcr.BedwarsXP;
 
 import ldcr.BedwarsXP.utils.YamlUtils;
 import lombok.Getter;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -19,6 +20,7 @@ public class Config {
     public static boolean disableUpdateChecker;
 
     public static String xpMessage;
+    public static String broadcastMessage;
     public static boolean addResShop;
 
     public static double deathCost;
@@ -69,7 +71,9 @@ public class Config {
 
         disableUpdateChecker = configYaml.getBoolean("Disable_UpdateChecker", true);
 
-        xpMessage = configYaml.getString("Message").replaceAll("&", "§").replaceAll("§§", "§");
+        xpMessage = ChatColor.translateAlternateColorCodes('&', configYaml.getString("Message"));
+
+        broadcastMessage = ChatColor.translateAlternateColorCodes('&', configYaml.getString("BroadcastMessage"));
         addResShop = configYaml.getBoolean("Add_Res_Shop");
         if (addResShop) {
             BedwarsXP.sendConsoleMessage("§a" + BedwarsXP.l18n("RESOURCE_SHOP_ENABLED"));
@@ -86,7 +90,7 @@ public class Config {
             BedwarsXP.sendConsoleMessage("§a" + BedwarsXP.l18n("DEATH_DROP_EXP_BOTTLE_DISABLED"));
 
         maxXP = configYaml.getInt("MaxXP");
-        maxXPMessage = configYaml.getString("MaxXPMessage").replaceAll("&", "§").replaceAll("§§", "§");
+        maxXPMessage = ChatColor.translateAlternateColorCodes('&', configYaml.getString("MaxXPMessage"));
         BedwarsXP.sendConsoleMessage("§a" + (maxXP == 0 ? BedwarsXP.l18n("MAX_XP_LIMIT_DISABLED") : BedwarsXP.l18n("MAX_XP_LIMIT_ENABLED", "%value%", String.valueOf(maxXP))));
 
         fullXPBedwars = configYaml.getBoolean("Full_XP_Bedwars");

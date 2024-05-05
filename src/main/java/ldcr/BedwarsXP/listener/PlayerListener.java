@@ -8,9 +8,9 @@ import ldcr.BedwarsXP.Config;
 import ldcr.BedwarsXP.api.XPManager;
 import ldcr.BedwarsXP.api.events.BedwarsXPDeathDropXPEvent;
 import ldcr.BedwarsXP.utils.ResourceUtils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -24,19 +24,15 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 
 public class PlayerListener implements Listener {
+
+    final NamespacedKey expKey = new NamespacedKey(BedwarsXP.getInstance(), "exp");
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onItemPickup(EntityPickupItemEvent e) {
@@ -48,10 +44,11 @@ public class PlayerListener implements Listener {
         ItemStack stack = entity.getItemStack();
         if (stack == null) return;
         Integer count;
-        if (stack.getType().name().contains("BOTTLE") && stack.hasItemMeta() && stack.getItemMeta().hasDisplayName() && stack.getItemMeta().getDisplayName().equals("§f经验") && stack.getItemMeta().hasLore()) {
-            count = NumberUtils.toInt(stack.getItemMeta().getLore().get(0));
-        } else {
+        ItemMeta itemMeta = stack.getItemMeta();
+        if (stack.getType() != Material.EXPERIENCE_BOTTLE && !itemMeta.getCustomTagContainer().hasCustomTag(expKey, ItemTagType.INTEGER)) {
             count = ResourceUtils.convertResToXP(stack);
+        } else {
+            count = itemMeta.getCustomTagContainer().getCustomTag(expKey, ItemTagType.INTEGER);
         }
 
         if (count == null || count == 0) return;
@@ -90,10 +87,9 @@ public class PlayerListener implements Listener {
     }
 
     private void dropXPBottle(Player player, int xp) {
-        ItemStack dropStack = new ItemStack(Material.EXP_BOTTLE, 16);
+        ItemStack dropStack = new ItemStack(Material.EXPERIENCE_BOTTLE, 16);
         ItemMeta meta = dropStack.getItemMeta();
-        meta.setDisplayName("§f经验");
-        meta.setLore(Collections.singletonList(String.valueOf(xp)));
+        meta.getCustomTagContainer().setCustomTag(expKey, ItemTagType.INTEGER, xp);
         dropStack.setItemMeta(meta);
         Item droppedItem = player.getWorld().dropItemNaturally(player.getLocation().add(0, 1, 0), dropStack);
         droppedItem.setPickupDelay(40);
@@ -113,10 +109,18 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    private void onJoin(PlayerQuitEvent e){
-        PlayerDeathEvent deathEvent = new PlayerDeathEvent(e.getPlayer(), new ArrayList<>(), 0, null);
-        Bukkit.getPluginManager().callEvent(deathEvent);
+    private void onQuit(PlayerQuitEvent e){
+        Player player = e.getPlayer();
+        Game bw = checkGame(player);
+        if (bw == null) return;
+        XPManager xpman = XPManager.getXPManager(bw.getName());
+        int xp = xpman.getXP(player);
+        BedwarsXPDeathDropXPEvent event = new BedwarsXPDeathDropXPEvent(bw.getName(), player, xp, xp);
+        Bukkit.getPluginManager().callEvent(event);
+        xpman.setXP(player, 0);
+        dropXPBottle(player, xp);
     }
+
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
@@ -180,14 +184,6 @@ public class PlayerListener implements Listener {
         if (bw == null) return;
         Bukkit.getScheduler().runTaskLater(BedwarsXP.getInstance(),
                 () -> XPManager.getXPManager(bw.getName()).updateXPBar(p), 5);
-
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPlayerInteract(PlayerInteractEvent e) {
-        Game bw = checkGame(e.getPlayer());
-        if (bw == null) return;
-        XPManager.getXPManager(bw.getName()).updateXPBar(e.getPlayer());
     }
 
     private Game checkGame(Player player) {
