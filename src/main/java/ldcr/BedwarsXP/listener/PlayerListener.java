@@ -115,6 +115,7 @@ public class PlayerListener implements Listener {
         if (bw == null) return;
         XPManager xpman = XPManager.getXPManager(bw.getName());
         int xp = xpman.getXP(player);
+        if (xp <= 0) return;
         BedwarsXPDeathDropXPEvent event = new BedwarsXPDeathDropXPEvent(bw.getName(), player, xp, xp);
         Bukkit.getPluginManager().callEvent(event);
         xpman.setXP(player, 0);
@@ -140,10 +141,7 @@ public class PlayerListener implements Listener {
         costed = event.getXPCost();
         dropped = event.getXPDropped();
         // 扣除经验
-        int to = xpman.getXP(p) - costed;
-        if (to < 0) {
-            to = 0;
-        }
+        int to = Math.max(xpman.getXP(p) - costed, 0);
         e.setNewLevel(to);
         xpman.setXP(p, to);
         // 掉落经验
