@@ -2,7 +2,7 @@ package ldcr.BedwarsXP.api;
 
 import ldcr.BedwarsXP.Config;
 import ldcr.BedwarsXP.utils.ActionBarUtils;
-import ldcr.BedwarsXP.utils.SoundMachine;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -78,7 +78,7 @@ public class XPManager {
                 messageTimeMap.remove(uniqueId);
             }
         }
-        player.playSound(player.getLocation(), SoundMachine.get("ORB_PICKUP", "ENTITY_EXPERIENCE_ORB_PICKUP"), 0.2F, 1.5F);
+        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.2F, 1.5F);
     }
 
     public void sendMaxXPMessage(Player player) {
