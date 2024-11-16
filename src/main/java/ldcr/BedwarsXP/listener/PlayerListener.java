@@ -3,6 +3,7 @@ package ldcr.BedwarsXP.listener;
 import io.github.bedwarsrel.BedwarsRel;
 import io.github.bedwarsrel.events.BedwarsGameEndEvent;
 import io.github.bedwarsrel.game.Game;
+import io.github.bedwarsrel.game.Team;
 import ldcr.BedwarsXP.BedwarsXP;
 import ldcr.BedwarsXP.Config;
 import ldcr.BedwarsXP.api.XPManager;
@@ -113,13 +114,20 @@ public class PlayerListener implements Listener {
         Player player = e.getPlayer();
         Game bw = checkGame(player);
         if (bw == null) return;
+        Team t = bw.getPlayerTeam(player);
+        if (t==null)return;
+        if (bw.isSpectator(player)) {
+            return;
+        }
         XPManager xpman = XPManager.getXPManager(bw.getName());
         int xp = xpman.getXP(player);
         if (xp <= 0) return;
         BedwarsXPDeathDropXPEvent event = new BedwarsXPDeathDropXPEvent(bw.getName(), player, xp, xp);
         Bukkit.getPluginManager().callEvent(event);
-        xpman.setXP(player, 0);
-        dropXPBottle(player, xp);
+        if (!event.isCancelled()){
+            xpman.setXP(player, 0);
+            dropXPBottle(player, xp);
+        }
     }
 
     @EventHandler
