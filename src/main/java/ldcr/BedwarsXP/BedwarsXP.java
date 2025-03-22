@@ -53,7 +53,6 @@ public class BedwarsXP extends JavaPlugin {
                 Bukkit.getPluginManager().disablePlugin(this);
                 return;
             }
-            ActionBarUtils.load();
             Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
             getCommand("bedwarsxp").setExecutor(new BedwarsXPCommandListener());
             getCommand("bedwarsxpedit").setExecutor(new EditXPCommandListener());
