@@ -3,6 +3,7 @@ package ldcr.BedwarsXP.listener;
 import io.github.bedwarsrel.BedwarsRel;
 import io.github.bedwarsrel.events.BedwarsGameEndEvent;
 import io.github.bedwarsrel.game.Game;
+import io.github.bedwarsrel.game.GameState;
 import io.github.bedwarsrel.game.Team;
 import ldcr.BedwarsXP.BedwarsXP;
 import ldcr.BedwarsXP.Config;
@@ -113,12 +114,9 @@ public class PlayerListener implements Listener {
     private void onQuit(PlayerQuitEvent e){
         Player player = e.getPlayer();
         Game bw = checkGame(player);
-        if (bw == null) return;
+        if (bw == null || GameState.RUNNING != bw.getState()) return;
         Team t = bw.getPlayerTeam(player);
-        if (t==null)return;
-        if (bw.isSpectator(player)) {
-            return;
-        }
+        if (t == null) return;
         XPManager xpman = XPManager.getXPManager(bw.getName());
         int xp = xpman.getXP(player);
         if (xp <= 0) return;
