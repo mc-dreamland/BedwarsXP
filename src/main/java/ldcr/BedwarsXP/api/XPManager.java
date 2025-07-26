@@ -12,8 +12,8 @@ import java.util.UUID;
 public class XPManager {
     private static final Map<String, XPManager> managerMap = new HashMap<>();
     private final Map<UUID, Integer> xp = new HashMap<>();
-    private final HashMap<UUID, Long> messageTimeMap = new HashMap<>();
-    private final HashMap<UUID, Integer> messageCountMap = new HashMap<>();
+    private final Map<UUID, Integer> xpCache = new HashMap<>();
+    private final Map<UUID, Long> lastSendTime = new HashMap<>();
 
     public static XPManager getXPManager(String bedwarsGame) {
         if (!managerMap.containsKey(bedwarsGame)) {
@@ -65,19 +65,29 @@ public class XPManager {
     }
 
     public void sendXPMessage(Player player, int count) {
-        UUID uniqueId = player.getUniqueId();
-        if (!Config.xpMessage.isEmpty()) {
-            messageTimeMap.putIfAbsent(uniqueId, System.currentTimeMillis() + 500);
-            messageCountMap.putIfAbsent(uniqueId, 0);
+        UUID uuid = player.getUniqueId();
 
-            int addedXp = messageCountMap.get(uniqueId) + count;
-            messageCountMap.put(uniqueId, addedXp);
-            if (System.currentTimeMillis() > messageTimeMap.get(uniqueId)) {
-                ActionBarUtils.sendActionBar(player, Config.xpMessage.replaceAll("%xp%", Integer.toString(addedXp)));
-                messageCountMap.remove(uniqueId);
-                messageTimeMap.remove(uniqueId);
+        if (!Config.xpMessage.isEmpty()) {
+            // 累计经验
+            xpCache.put(uuid, xpCache.getOrDefault(uuid, 0) + count);
+
+            long currentTime = System.currentTimeMillis();
+            long lastTime = lastSendTime.getOrDefault(uuid, 0L);
+
+            // 判断是否已过去0.5秒（500ms）
+            if (xpCache.containsKey(uuid) && currentTime > lastTime) {
+                int totalXp = xpCache.get(uuid);
+
+                // 清理缓存
+                xpCache.remove(uuid);
+                lastSendTime.put(uuid, currentTime + 500);
+
+                // 发送消息
+                String msg = Config.xpMessage.replace("%xp%", Integer.toString(totalXp));
+                ActionBarUtils.sendActionBar(player, msg);
             }
         }
+
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.2F, 1.5F);
     }
 

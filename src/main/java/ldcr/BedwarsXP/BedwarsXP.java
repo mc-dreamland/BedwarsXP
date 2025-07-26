@@ -3,7 +3,6 @@ package ldcr.BedwarsXP;
 import ldcr.BedwarsXP.command.BedwarsXPCommandListener;
 import ldcr.BedwarsXP.command.EditXPCommandListener;
 import ldcr.BedwarsXP.listener.PlayerListener;
-import ldcr.BedwarsXP.utils.ActionBarUtils;
 import ldcr.BedwarsXP.utils.ReflectionUtils;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -20,8 +19,6 @@ public class BedwarsXP extends JavaPlugin {
     private static BedwarsXP instance;
     @Getter
     private static CommandSender consoleSender;
-    @Getter
-    private static String updateUrl = null;
 
     public static String l18n(String key, String... replacement) {
         String message;
